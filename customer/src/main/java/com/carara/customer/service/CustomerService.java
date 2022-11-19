@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public record CustomerService(CustomerRepository customerRepository, RestTemplate restTemplate) {
     public void registerCustomer(CustomerRegistrationRequest request) {
+
         Customer customer = Customer.builder()
                 .firstName(request.firstName())
                 .lastName(request.lastName())
@@ -28,12 +29,11 @@ public record CustomerService(CustomerRepository customerRepository, RestTemplat
         );
 
         assert fraudCheckResponse != null;
-        if(fraudCheckResponse.isFraudster()){
+        if (fraudCheckResponse.isFraudster()) {
             throw new IllegalStateException("Fraudster");
         }
 
         customerRepository.save(customer);
         //todo: send notification
-
     }
 }

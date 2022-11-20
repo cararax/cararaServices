@@ -9,8 +9,12 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableFeignClients(
         basePackages = "com.carara.clients"
 )
-@SpringBootApplication
-public class CustomerApplication {
+@SpringBootApplication(
+        scanBasePackages = {
+                "com.carara.customer",
+                "com.carara.amqp"
+        }
+)public class CustomerApplication {
     public static void main(String[] args) {
         SpringApplication.run(CustomerApplication.class, args);
     }

@@ -1,8 +1,9 @@
 package com.carara.customer.service;
 
+import com.carara.amqp.RabbitMQMessageProducer;
 import com.carara.clients.fraud.FraudClient;
-import com.carara.clients.notification.NotificationClient;
 import com.carara.clients.fraud.response.FraudCheckResponse;
+import com.carara.clients.notification.NotificationClient;
 import com.carara.clients.notification.request.NotificationRequest;
 import com.carara.customer.model.Customer;
 import com.carara.customer.model.request.CustomerRegistrationRequest;
@@ -10,7 +11,10 @@ import com.carara.customer.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public record CustomerService(CustomerRepository customerRepository, FraudClient fraudClient, NotificationClient notificationClient) {
+public record CustomerService(
+        CustomerRepository customerRepository, FraudClient fraudClient,
+        RabbitMQMessageProducer rabbitMQMessageProducer
+) {
     public void registerCustomer(CustomerRegistrationRequest request) {
 
         Customer customer = Customer.builder()
@@ -33,8 +37,13 @@ public record CustomerService(CustomerRepository customerRepository, FraudClient
 
         customerRepository.save(customer);
 
-        // todo: make it async. i.e add to queue
         String message = String.format("Hi, %s, welcome to CararaSerivce!", customer.getFirstName());
-        notificationClient.sendNotification(new NotificationRequest(customer.getId(), customer.getEmail(), message));
+        NotificationRequest notificationRequest = new NotificationRequest(customer.getId(), customer.getEmail(), message);
+
+        rabbitMQMessageProducer.publish(
+                notificationRequest,
+                "internal.exchange",
+                "internal.notification.routing-key"
+        );
     }
 }

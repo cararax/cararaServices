@@ -1,6 +1,6 @@
 package com.carara.fraud.controller;
 
-import com.carara.fraud.model.Response.FraudCheckResponse;
+import com.carara.clients.fraud.response.FraudCheckResponse;
 import com.carara.fraud.service.FraudCheckService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

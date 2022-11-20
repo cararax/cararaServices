@@ -1,14 +1,14 @@
 package com.carara.customer.service;
 
+import com.carara.clients.fraud.FraudClient;
+import com.carara.clients.fraud.response.FraudCheckResponse;
 import com.carara.customer.model.Customer;
 import com.carara.customer.model.request.CustomerRegistrationRequest;
-import com.carara.customer.model.response.FraudCheckResponse;
 import com.carara.customer.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 @Service
-public record CustomerService(CustomerRepository customerRepository, RestTemplate restTemplate) {
+public record CustomerService(CustomerRepository customerRepository, FraudClient fraudClient) {
     public void registerCustomer(CustomerRegistrationRequest request) {
 
         Customer customer = Customer.builder()
@@ -22,11 +22,7 @@ public record CustomerService(CustomerRepository customerRepository, RestTemplat
 
         customerRepository.saveAndFlush(customer);
 
-        FraudCheckResponse fraudCheckResponse = restTemplate.getForObject(
-                "http://FRAUD/api/v1/fraud-check/{customerId}",
-                FraudCheckResponse.class,
-                customer.getId()
-        );
+        FraudCheckResponse fraudCheckResponse = fraudClient.isFraudster(customer.getId());
 
         assert fraudCheckResponse != null;
         if (fraudCheckResponse.isFraudster()) {
